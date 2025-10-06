@@ -1,3 +1,4 @@
+USE data_warehouse;
 CREATE TABLE dimUsers (
     user_key INT AUTO_INCREMENT PRIMARY KEY,
     source_user_id INT,

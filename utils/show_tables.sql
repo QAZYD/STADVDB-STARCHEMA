@@ -1,0 +1,3 @@
+USE faker;
+
+SHOW TABLES;
