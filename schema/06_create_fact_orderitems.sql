@@ -1,3 +1,7 @@
+CREATE DATABASE IF NOT EXISTS data_warehouse;
+
+USE data_warehouse;
+
 CREATE TABLE factOrderItems (
     order_item_key INT AUTO_INCREMENT PRIMARY KEY,
     order_key INT,

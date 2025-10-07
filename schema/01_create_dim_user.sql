@@ -1,3 +1,4 @@
+CREATE DATABASE IF NOT EXISTS data_warehouse;
 USE data_warehouse;
 CREATE TABLE dimUsers (
     user_key INT AUTO_INCREMENT PRIMARY KEY,
