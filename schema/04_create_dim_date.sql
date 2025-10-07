@@ -1,6 +1,6 @@
 CREATE DATABASE IF NOT EXISTS data_warehouse;
 USE data_warehouse;
-CREATE TABLE dim_date (
+CREATE TABLE dimDates (
     date_key INT PRIMARY KEY,        
     full_date DATE,
     day INT,

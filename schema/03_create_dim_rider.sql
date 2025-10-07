@@ -1,6 +1,6 @@
 CREATE DATABASE IF NOT EXISTS data_warehouse;
 USE data_warehouse;
-CREATE TABLE dim_rider (
+CREATE TABLE dimRiders (
     rider_key INT AUTO_INCREMENT PRIMARY KEY,
     rider_id INT,
     first_name VARCHAR(100),
