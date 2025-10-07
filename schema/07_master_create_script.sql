@@ -38,7 +38,7 @@ CREATE TABLE dimProducts (
 
 
 -- dim_rider
-CREATE TABLE dim_rider (
+CREATE TABLE dimRiders (
     rider_key INT AUTO_INCREMENT PRIMARY KEY,
     rider_id INT,
     first_name VARCHAR(100),
@@ -53,7 +53,7 @@ CREATE TABLE dim_rider (
 
 
 -- dim_date
-CREATE TABLE dim_date (
+CREATE TABLE dimDates (
     date_key INT PRIMARY KEY,        
     full_date DATE,
     day INT,
