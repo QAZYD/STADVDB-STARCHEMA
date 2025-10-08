@@ -8,17 +8,17 @@ USE data_warehouse;
 CREATE TABLE dimUsers (
     user_key INT AUTO_INCREMENT PRIMARY KEY,
     source_user_id INT,
-    username VARCHAR(100),
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
+    username VARCHAR(255),
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
     address_1 VARCHAR(255),
     address_2 VARCHAR(255),
-    city VARCHAR(100),
-    country VARCHAR(100),
-    zip_code VARCHAR(20),
-    phone_number VARCHAR(30),
+    city VARCHAR(255),
+    country VARCHAR(255),
+    zip_code VARCHAR(255),
+    phone_number VARCHAR(255),
     date_of_birth DATE,
-    gender VARCHAR(10),
+    gender VARCHAR(255),
     created_at DATETIME,
     updated_at DATETIME
 );
@@ -27,11 +27,11 @@ CREATE TABLE dimUsers (
 CREATE TABLE dimProducts (
     product_key INT AUTO_INCREMENT PRIMARY KEY,  
     source_product_id INT,                       
-    product_code VARCHAR(100),
-    category VARCHAR(100),
+    product_code VARCHAR(255),
+    category VARCHAR(255),
     description VARCHAR(255),
-    name VARCHAR(150),
-    price DECIMAL(10,2),
+    name VARCHAR(255),
+    price FLOAT,
     created_at DATETIME,
     updated_at DATETIME
 );
@@ -41,12 +41,12 @@ CREATE TABLE dimProducts (
 CREATE TABLE dimRiders (
     rider_key INT AUTO_INCREMENT PRIMARY KEY,
     rider_id INT,
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
-    vehicle_type VARCHAR(50),
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
+    vehicle_type VARCHAR(255),
     counter_id INT,
     age INT,
-    gender VARCHAR(10),
+    gender VARCHAR(255),
     created_at DATETIME,
     updated_at DATETIME
 );
@@ -58,11 +58,11 @@ CREATE TABLE dimDates (
     full_date DATE,
     day INT,
     month INT,
-    month_name VARCHAR(20),
+    month_name VARCHAR(255),
     quarter INT,
     year INT,
     day_of_week INT,
-    day_name VARCHAR(20),
+    day_name VARCHAR(255),
     is_weekend BOOLEAN
 );
 
@@ -70,7 +70,7 @@ CREATE TABLE dimDates (
 -- fact_orders
 CREATE TABLE factOrders (
     order_key INT AUTO_INCREMENT PRIMARY KEY,
-    order_number VARCHAR(50),
+    order_number VARCHAR(255),
     user_key INT,
     rider_key INT,
     date_key INT,
