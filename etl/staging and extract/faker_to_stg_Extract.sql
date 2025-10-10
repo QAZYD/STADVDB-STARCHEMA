@@ -70,3 +70,34 @@ SELECT
     OrderId,
     ProductId
 FROM faker.orderitems;
+
+INSERT INTO staging.stg_denorm_orders (
+    order_id,
+    order_number,
+    user_id,
+    delivery_date,
+    delivery_rider_id,
+    product_id,
+    quantity,
+    notes,
+    order_created_at,
+    order_updated_at,
+    item_created_at,
+    item_updated_at
+)
+SELECT 
+    o.order_id,
+    o.order_number,
+    o.user_id,
+    o.delivery_date,
+    o.delivery_rider_id,
+    oi.product_id,
+    oi.quantity,
+    oi.notes,
+    o.created_at AS order_created_at,
+    o.updated_at AS order_updated_at,
+    oi.created_at AS item_created_at,
+    oi.updated_at AS item_updated_at
+FROM staging.stg_orders o
+LEFT JOIN staging.stg_order_items oi 
+    ON o.order_id = oi.order_id;
