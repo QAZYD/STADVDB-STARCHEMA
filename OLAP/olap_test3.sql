@@ -5,3 +5,4 @@ JOIN data_warehouse.dimProducts dp
 WHERE dp.category = 'Appliances'
 GROUP BY dp.name
 ORDER BY total_quantity DESC;
+ 
