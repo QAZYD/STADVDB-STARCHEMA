@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const mysql = require("mysql2");
 const path = require("path");
@@ -10,10 +11,10 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Database connection
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "waxdQSCrfv135$!",
-  database: "data_warehouse",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
 });
 
 db.connect((err) => {
@@ -29,8 +30,8 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Top categories report
-app.get("/report/top-categories", (req, res) => {
+// Top categories report, Roll up operation
+app.get("/report/top-categories", (req, res) => { 
   const query = `
     SELECT
         dp.category AS product_category,
@@ -48,7 +49,7 @@ app.get("/report/top-categories", (req, res) => {
   });
 });
 
-// Top products by category report (paginated/staggered)
+// Top products by category report (paginated/staggered), Drill Down
 app.get("/report/top-products", (req, res) => {
   const limit = parseInt(req.query.limit) || 50;  // load 50 rows at a time
   const offset = parseInt(req.query.offset) || 0;
