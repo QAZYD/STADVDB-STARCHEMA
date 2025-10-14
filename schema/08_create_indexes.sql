@@ -36,3 +36,31 @@ ALTER TABLE dimUsers ADD INDEX idx_city (city);
 -- dimRiders
 ALTER TABLE dimRiders ADD INDEX idx_vehicle_type (vehicle_type);
 
+
+-- ===============================
+-- OLAP Test 3 (Slice by Category)
+-- ===============================
+-- Query filters by dp.category = 'Appliances' and groups by dp.name
+-- These indexes support fast category filtering and grouping by product name
+
+-- Composite index to optimize WHERE dp.category + GROUP BY dp.name
+ALTER TABLE dimProducts ADD INDEX idx_category_name_slice (category, name);
+
+-- Supporting index to accelerate joins and quantity aggregation
+ALTER TABLE denormFactOrders ADD INDEX idx_product_quantity_slice (product_key, quantity);
+
+-- ===============================
+-- OLAP Test 4 (Dice by Category and Price)
+-- ===============================
+-- Query filters by dp.category IN (...) and dp.price > 1000
+-- and groups by dp.category, dp.name
+-- These composite indexes optimize both filtering and aggregation
+
+-- Composite index for category and price filtering
+ALTER TABLE dimProducts ADD INDEX idx_category_price (category, price);
+
+-- Composite index to speed up category + name grouping under filters
+ALTER TABLE dimProducts ADD INDEX idx_category_name_price (category, name, price);
+
+-- Supporting covering index in fact table to optimize quantity aggregation by product
+ALTER TABLE denormFactOrders ADD INDEX idx_product_quantity_dice (product_key, quantity);
