@@ -10,17 +10,13 @@
 </head>
 <body>
   <h1>OLAP Dashboard</h1>
-  <button onclick="openTopCategories()">Top Categories</button>
-  <button onclick="openTopProducts()">Top Products</button>
+
+  <button onclick="openDimProducts()">View Products & Reports</button>
 
   <script>
-    function openTopCategories() {
-      window.open("/reportTopCategories.html", "_blank", "width=800,height=600");
-    }
-
-    function openTopProducts() {
-      window.open("/reportTopProducts.html", "_blank", "width=1000,height=600");
-    }
+     function openDimProducts() {
+    window.location.href = "/dimProducts.html";
+  }
   </script>
 </body>
 </html>

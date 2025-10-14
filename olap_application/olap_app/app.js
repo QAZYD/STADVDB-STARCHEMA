@@ -25,12 +25,12 @@ db.connect((err) => {
   console.log("Connected to MySQL Data Warehouse!");
 });
 
-// Simple homepage route
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Top categories report
+
 app.get("/report/top-categories", (req, res) => {
   const query = `
     SELECT
@@ -53,7 +53,11 @@ app.get("/report/top-categories", (req, res) => {
   });
 });
 
-// Start server
+
+
+
+
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
