@@ -1,12 +1,15 @@
 USE data_warehouse;
 
 -- Fact table indexes (for FK)
-ALTER TABLE denormFactOrders ADD INDEX idx_customer_id (customer_id);
-ALTER TABLE denormFactOrders ADD INDEX idx_product_id (product_id);
+ALTER TABLE denormFactOrders ADD INDEX idx_user_key (user_key);
+ALTER TABLE denormFactOrders ADD INDEX idx_product_key (product_key);
 ALTER TABLE denormFactOrders ADD INDEX idx_rider_key (rider_key);
 
 -- Date-based indexes for time analysis
 ALTER TABLE denormFactOrders ADD INDEX idx_order_date (order_created_at);
+
+-- Source ID index (useful for data lineage and troubleshooting)
+ALTER TABLE denormFactOrders ADD INDEX idx_source_order (source_order_id);
 
 
 -- Dimension table indexes for commonly filtered attributes
