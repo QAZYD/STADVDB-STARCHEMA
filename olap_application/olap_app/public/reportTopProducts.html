@@ -1,41 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Top Products Report</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    button { margin-bottom: 20px; padding: 10px 20px; }
-    table { border-collapse: collapse; width: 80%; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f4f4f4; }
-  </style>
+<meta charset="UTF-8">
+<title>Top Products</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  button { padding: 10px 20px; margin: 10px 0; }
+</style>
 </head>
 <body>
-  <button onclick="window.close()">Back to Dashboard</button>
-  <h2>Top Products by Category</h2>
-  <table id="reportTable">
-    <thead>
-      <tr>
-        <th>Category</th>
-        <th>Product Name</th>
-        <th>Total Quantity Ordered</th>
-      </tr>
-    </thead>
-    <tbody><tr><td colspan="3">Loading...</td></tr></tbody>
-  </table>
+<h1>Top Products</h1>
+<button id="backButton">Back to Dashboard</button>
+<table id="productsTable">
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Product Name</th>
+      <th>Total Quantity</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<button id="loadMore">Load More</button>
+<p id="loadingInfo"></p>
 
-  <script>
-    fetch("/report/top-products")
-      .then(res => res.json())
-      .then(data => {
-        const tbody = document.querySelector("#reportTable tbody");
-        tbody.innerHTML = "";
-        data.forEach(row => {
-          tbody.innerHTML += `<tr><td>${row.category}</td><td>${row.name}</td><td>${row.total_quantity}</td></tr>`;
-        });
-      })
-      .catch(err => console.error(err));
-  </script>
+<script>
+  let offset = 0;
+  const limit = 50; // rows per batch
+
+  const tbody = document.querySelector("#productsTable tbody");
+  const loadingInfo = document.getElementById("loadingInfo");
+
+  async function loadProducts() {
+    loadingInfo.textContent = "Loading...";
+    const res = await fetch(`/report/top-products?limit=${limit}&offset=${offset}`);
+    const json = await res.json();
+
+    json.data.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${row.category}</td><td>${row.name}</td><td>${row.total_quantity}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    offset += json.row_count;
+
+    if (json.row_count < limit) {
+      document.getElementById("loadMore").disabled = true;
+      loadingInfo.textContent = `All ${offset} rows loaded in ${json.duration_ms} ms.`;
+    } else {
+      loadingInfo.textContent = `Loaded ${offset} rows so far... (${json.duration_ms} ms for last batch)`;
+    }
+  }
+
+  document.getElementById("loadMore").addEventListener("click", loadProducts);
+  document.getElementById("backButton").addEventListener("click", () => {
+    window.close(); // close current window
+  });
+
+  // Load first batch immediately
+  loadProducts();
+</script>
 </body>
 </html>

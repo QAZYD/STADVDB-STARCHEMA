@@ -48,21 +48,33 @@ app.get("/report/top-categories", (req, res) => {
   });
 });
 
-// Top products by category report
+// Top products by category report (paginated/staggered)
 app.get("/report/top-products", (req, res) => {
+  const limit = parseInt(req.query.limit) || 50;  // load 50 rows at a time
+  const offset = parseInt(req.query.offset) || 0;
+
   const query = `
     SELECT dp.category, dp.name, SUM(dfo.quantity) AS total_quantity
     FROM data_warehouse.denormfactorders dfo
     JOIN data_warehouse.dimProducts dp
-        ON dfo.product_key = dp.product_key
+      ON dfo.product_key = dp.product_key
     GROUP BY dp.category, dp.name
     ORDER BY dp.category, total_quantity DESC
-    LIMIT 10000000;
+    LIMIT ? OFFSET ?;
   `;
 
-  db.query(query, (err, results) => {
+  const start = Date.now();
+  db.query(query, [limit, offset], (err, results) => {
+    const end = Date.now();
     if (err) return res.status(500).send("Database error");
-    res.json(results);
+
+    res.json({
+      duration_ms: end - start,
+      row_count: results.length,
+      offset,
+      limit,
+      data: results,
+    });
   });
 });
 
