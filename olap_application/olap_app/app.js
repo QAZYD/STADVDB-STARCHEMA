@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const mysql = require("mysql2");
 const path = require("path"); 
@@ -9,10 +10,10 @@ app.use(express.static(path.join(__dirname, "public")));
 
 
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",          
-  password: "waxdQSCrfv135$!",        
-  database: "data_warehouse", 
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
 });
 
 db.connect((err) => {
