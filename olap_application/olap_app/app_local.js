@@ -1,4 +1,3 @@
-
 const express = require("express");
 const mysql = require("mysql2");
 const path = require("path");
@@ -6,15 +5,15 @@ const path = require("path");
 const app = express();
 const port = 3000;
 
-// Serve static files (like index.html)
+// Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
 // Database connection
 const db = mysql.createConnection({
   host: "localhost",
-  user: "root",          
-  password: "waxdQSCrfv135$!",        
-  database: "data_warehouse", 
+  user: "root",
+  password: "waxdQSCrfv135$!",
+  database: "data_warehouse",
 });
 
 db.connect((err) => {
@@ -25,7 +24,7 @@ db.connect((err) => {
   console.log("Connected to MySQL Data Warehouse!");
 });
 
-// Simple homepage route
+// Homepage
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -44,11 +43,25 @@ app.get("/report/top-categories", (req, res) => {
   `;
 
   db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error executing query:", err);
-      res.status(500).send("Database error");
-      return;
-    }
+    if (err) return res.status(500).send("Database error");
+    res.json(results);
+  });
+});
+
+// Top products by category report
+app.get("/report/top-products", (req, res) => {
+  const query = `
+    SELECT dp.category, dp.name, SUM(dfo.quantity) AS total_quantity
+    FROM data_warehouse.denormfactorders dfo
+    JOIN data_warehouse.dimProducts dp
+        ON dfo.product_key = dp.product_key
+    GROUP BY dp.category, dp.name
+    ORDER BY dp.category, total_quantity DESC
+    LIMIT 10000000;
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).send("Database error");
     res.json(results);
   });
 });

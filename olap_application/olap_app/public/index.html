@@ -5,53 +5,22 @@
   <title>OLAP Dashboard</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 30px; }
-    button { padding: 10px 20px; margin-bottom: 20px; }
-    table { border-collapse: collapse; width: 50%; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f4f4f4; }
+    button { padding: 10px 20px; margin: 10px; }
   </style>
 </head>
 <body>
   <h1>OLAP Dashboard</h1>
-  <button id="loadTopCategories">Load Top Categories</button>
-  <table id="reportTable">
-    <thead>
-      <tr>
-        <th>Product Category</th>
-        <th>Total Quantity Ordered</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td colspan="2">Click "Load Top Categories" to fetch data</td></tr>
-    </tbody>
-  </table>
+  <button onclick="openTopCategories()">Top Categories</button>
+  <button onclick="openTopProducts()">Top Products</button>
 
   <script>
-    const button = document.getElementById("loadTopCategories");
-    const tableBody = document.querySelector("#reportTable tbody");
+    function openTopCategories() {
+      window.open("/reportTopCategories.html", "_blank", "width=800,height=600");
+    }
 
-    button.addEventListener("click", async () => {
-      tableBody.innerHTML = "<tr><td colspan='2'>Loading...</td></tr>";
-
-      try {
-        const response = await fetch("/report/top-categories");
-        const data = await response.json();
-
-        if (!data.length) {
-          tableBody.innerHTML = "<tr><td colspan='2'>No data found</td></tr>";
-          return;
-        }
-
-        let tableHTML = "";
-        data.forEach(row => {
-          tableHTML += `<tr><td>${row.product_category}</td><td>${row.total_quantity_ordered}</td></tr>`;
-        });
-        tableBody.innerHTML = tableHTML;
-      } catch (err) {
-        tableBody.innerHTML = "<tr><td colspan='2'>Error loading data</td></tr>";
-        console.error(err);
-      }
-    });
+    function openTopProducts() {
+      window.open("/reportTopProducts.html", "_blank", "width=1000,height=600");
+    }
   </script>
 </body>
 </html>
