@@ -11,12 +11,18 @@
 <body>
   <h1>OLAP Dashboard</h1>
 
+  <!-- Navigation buttons -->
   <button onclick="openDimProducts()">View Products & Reports</button>
+  <button onclick="openFactOrders()">View Fact Orders</button>
 
   <script>
      function openDimProducts() {
-    window.location.href = "/dimProducts.html";
-  }
+        window.location.href = "/dimProducts.html";
+     }
+
+     function openFactOrders() {
+        window.location.href = "/denormFactOrders.html";
+     }
   </script>
 </body>
 </html>

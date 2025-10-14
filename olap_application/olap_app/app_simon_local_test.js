@@ -158,6 +158,49 @@ app.get("/report/dice-products", (req, res) => {
     });
   });
 });
+//dim_users
+
+//dim_riders
+
+
+//fact_denorm_orders
+
+// Fact Orders report (paginated)
+app.get("/report/fact-orders", (req, res) => {
+  const limit = parseInt(req.query.limit) || 50;  // default 50 rows per page
+  const offset = parseInt(req.query.offset) || 0;
+
+  const query = `
+    SELECT 
+      fo.order_key,
+      fo.source_order_id,
+      fo.user_key,
+      fo.rider_key,
+      fo.product_key,
+      fo.order_number,
+      fo.quantity,
+      fo.notes,
+      fo.order_created_at,
+      fo.order_updated_at,
+      fo.item_created_at,
+      fo.item_updated_at
+    FROM denormFactOrders fo
+    ORDER BY fo.order_created_at DESC
+    LIMIT ? OFFSET ?;
+  `;
+
+  db.query(query, [limit, offset], (err, results) => {
+    if (err) return res.status(500).send("Database error");
+
+    res.json({
+      row_count: results.length,
+      offset,
+      limit,
+      data: results
+    });
+  });
+});
+
 
 // Start server
 app.listen(port, () => {

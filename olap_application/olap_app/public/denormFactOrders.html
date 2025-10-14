@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fact Orders Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    button { padding: 10px 20px; margin: 5px; }
+    h2 { margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <h1>Fact Orders Dashboard</h1>
+
+  <!-- Fact Orders Table -->
+  <h2>All Orders</h2>
+  <table id="factOrdersTable">
+    <thead>
+      <tr>
+        <th>Order Key</th>
+        <th>User Key</th>
+        <th>Rider Key</th>
+        <th>Product Key</th>
+        <th>Source Order ID</th>
+        <th>Order Number</th>
+        <th>Quantity</th>
+        <th>Notes</th>
+        <th>Order Created At</th>
+        <th>Order Updated At</th>
+        <th>Item Created At</th>
+        <th>Item Updated At</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button id="loadMoreOrdersBtn">Load More Orders</button>
+  <button onclick="history.back()">Back</button>
+
+  <script>
+    // Pagination
+    let ordersOffset = 0;
+    const ordersLimit = 50;
+
+    async function loadOrders() {
+      const res = await fetch(`/report/fact-orders?offset=${ordersOffset}&limit=${ordersLimit}`);
+      const data = await res.json();
+      const tbody = document.querySelector("#factOrdersTable tbody");
+
+      data.data.forEach(order => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${order.order_key}</td>
+          <td>${order.user_key}</td>
+          <td>${order.rider_key}</td>
+          <td>${order.product_key}</td>
+          <td>${order.source_order_id}</td>
+          <td>${order.order_number}</td>
+          <td>${order.quantity}</td>
+          <td>${order.notes || ''}</td>
+          <td>${order.order_created_at}</td>
+          <td>${order.order_updated_at}</td>
+          <td>${order.item_created_at}</td>
+          <td>${order.item_updated_at}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      ordersOffset += ordersLimit;
+
+      if (data.row_count < ordersLimit) {
+        document.getElementById("loadMoreOrdersBtn").disabled = true;
+        document.getElementById("loadMoreOrdersBtn").innerText = "No More Orders";
+      }
+    }
+
+    document.getElementById("loadMoreOrdersBtn").addEventListener("click", loadOrders);
+
+    // Initial load
+    loadOrders();
+  </script>
+</body>
+</html>
