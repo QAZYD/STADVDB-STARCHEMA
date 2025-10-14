@@ -19,7 +19,6 @@ ALTER TABLE denormFactOrders ADD INDEX idx_source_order (source_order_id);
 ALTER TABLE denormFactOrders ADD INDEX idx_product_quantity (product_key, quantity);
 
 -- Optimize GROUP BY for category and product name queries(For olap_test 2)
-ALTER TABLE dimProducts ADD INDEX idx_category_name (category, name);
 
 -- ===============================
 -- Dimension Table Indexes
