@@ -34,3 +34,6 @@ ALTER TABLE dimUsers ADD INDEX idx_city (city);
 
 -- dimRiders
 ALTER TABLE dimRiders ADD INDEX idx_vehicle_type (vehicle_type);
+
+-- Optimize aggregation queries by product (For olap_test 1 and 2)
+ALTER TABLE denormFactOrders ADD INDEX idx_product_quantity (product_key, quantity);
