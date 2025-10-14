@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OLAP Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    h1 { color: #333; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    table { border-collapse: collapse; margin-top: 20px; width: 50%; }
+    th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+    th { background-color: #f4f4f4; }
+  </style>
+</head>
+<body>
+
+  <h1>OLAP Dashboard</h1>
+  <p>Welcome! Click the button below to view the Top Categories Report:</p>
+  <button id="loadReport">Load Top Categories</button>
+
+  <div id="reportContainer"></div>
+
+  <script>
+    document.getElementById('loadReport').addEventListener('click', async () => {
+      const container = document.getElementById('reportContainer');
+      container.innerHTML = "Loading report...";
+
+      try {
+        const response = await fetch('/report/top-categories');
+        const data = await response.json();
+
+
+        let tableHTML = '<table><tr><th>Category</th><th>Total Quantity</th></tr>';
+        data.forEach(row => {
+          tableHTML += `<tr><td>${row.category}</td><td>${row.total_quantity}</td></tr>`;
+        });
+        tableHTML += '</table>';
+
+        container.innerHTML = tableHTML;
+      } catch (err) {
+        container.innerHTML = "Error loading report.";
+        console.error(err);
+      }
+    });
+  </script>
+
+</body>
+</html>
