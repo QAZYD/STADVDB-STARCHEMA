@@ -1,17 +1,25 @@
-const express = require("express");
-const mysql = require("mysql2");
-const path = require("path");
+// --- imports ---
+import express from "express";
+import mysql from "mysql2";
+import path from "path";
+import { fileURLToPath } from "url";
+import rollupRoutes from "./routes/rollupRoutes.js";
 
+// --- ESM __dirname fix ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// --- Express setup ---
 const app = express();
 const port = 3000;
 
 app.use(express.static(path.join(__dirname, "public")));
 
-// Local database connection
+// --- Local database connection ---
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "waxdQSCrfv135$!",
+  password: "waxdQSCrfv135$!", 
   database: "data_warehouse",
 });
 
@@ -22,6 +30,10 @@ db.connect((err) => {
   }
   console.log("Connected to MySQL Data Warehouse!");
 });
+
+// --- Mount routes (AFTER db is defined) ---
+app.use("/report/rollups", rollupRoutes(db));
+
 
 // Homepage
 app.get("/", (req, res) => {

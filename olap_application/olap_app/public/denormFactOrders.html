@@ -37,10 +37,58 @@
   </table>
 
   <button id="loadMoreOrdersBtn">Load More Orders</button>
+
+  <!-- Product Rollup Section -->
+  <h2>Product Rollup</h2>
+  <button id="loadProductRollupBtn">Load Product Rollup</button>
+  <button id="loadMoreProductRollupBtn" disabled>Load More</button>
+
+  <table id="productRollupTable">
+    <thead>
+      <tr>
+        <th>Product Key</th>
+        <th>Product Code</th>
+        <th>Total Quantity</th>
+        <th>Total Orders</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Category Rollup Section -->
+  <h2>Category Rollup</h2>
+  <button id="loadCategoryRollupBtn">Load Category Rollup</button>
+  <button id="loadMoreCategoryRollupBtn" disabled>Load More</button>
+
+  <table id="categoryRollupTable">
+    <thead>
+      <tr>
+        <th>Product Category</th>
+        <th>Total Quantity</th>
+        <th>Total Orders</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  
+  <h2>Total Rollup</h2>
+  <button id="loadTotalRollupBtn">Load Total Rollup</button>
+
+  <table id="totalRollupTable">
+    <thead>
+      <tr>
+        <th>Total Quantity</th>
+        <th>Total Orders</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
   <button onclick="history.back()">Back</button>
 
   <script>
-    // Pagination
+    // === Fact Orders Section ===
     let ordersOffset = 0;
     const ordersLimit = 50;
 
@@ -77,9 +125,107 @@
     }
 
     document.getElementById("loadMoreOrdersBtn").addEventListener("click", loadOrders);
-
-    // Initial load
     loadOrders();
+
+    // === Product Rollup Section ===
+    let productOffset = 0;
+    const productLimit = 100;
+
+    async function loadProductRollup(initial = false) {
+      const res = await fetch(`/report/rollups/product-rollup?offset=${productOffset}&limit=${productLimit}`);
+      const data = await res.json();
+      const tbody = document.querySelector("#productRollupTable tbody");
+
+      if (initial) tbody.innerHTML = "";
+
+      data.data.forEach(product => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${product.product_key}</td>
+          <td>${product.product_code}</td>
+          <td>${product.total_quantity}</td>
+          <td>${product.total_orders}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      productOffset += productLimit;
+
+      const loadMoreBtn = document.getElementById("loadMoreProductRollupBtn");
+      if (data.data.length < productLimit) {
+        loadMoreBtn.disabled = true;
+        loadMoreBtn.innerText = "No More Records";
+      } else {
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.innerText = "Load More";
+      }
+    }
+
+    document.getElementById("loadProductRollupBtn").addEventListener("click", () => {
+      productOffset = 0;
+      loadProductRollup(true);
+    });
+
+    document.getElementById("loadMoreProductRollupBtn").addEventListener("click", () => {
+      loadProductRollup();
+    });
+
+    // === Category Rollup Section ===
+    let categoryOffset = 0;
+    const categoryLimit = 100;
+
+    async function loadCategoryRollup(initial = false) {
+      const res = await fetch(`/report/rollups/product-category-rollup?offset=${categoryOffset}&limit=${categoryLimit}`);
+      const data = await res.json();
+      const tbody = document.querySelector("#categoryRollupTable tbody");
+
+      if (initial) tbody.innerHTML = "";
+
+      data.data.forEach(category => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${category.product_category}</td>
+          <td>${category.total_quantity}</td>
+          <td>${category.total_orders}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      categoryOffset += categoryLimit;
+
+      const loadMoreBtn = document.getElementById("loadMoreCategoryRollupBtn");
+      if (data.data.length < categoryLimit) {
+        loadMoreBtn.disabled = true;
+        loadMoreBtn.innerText = "No More Records";
+      } else {
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.innerText = "Load More";
+      }
+    }
+
+    document.getElementById("loadCategoryRollupBtn").addEventListener("click", () => {
+      categoryOffset = 0;
+      loadCategoryRollup(true);
+    });
+
+    document.getElementById("loadMoreCategoryRollupBtn").addEventListener("click", () => {
+      loadCategoryRollup();
+    });
+
+     document.getElementById("loadTotalRollupBtn").addEventListener("click", async () => {
+      const res = await fetch("/report/rollups/total-rollup");
+      const data = await res.json();
+
+      const tableBody = document.querySelector("#totalRollupTable tbody");
+      tableBody.innerHTML = ""; // clear previous data if reloaded
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${data.data.total_quantity}</td>
+        <td>${data.data.total_orders}</td>
+      `;
+      tableBody.appendChild(row);
+    });
   </script>
 </body>
 </html>
