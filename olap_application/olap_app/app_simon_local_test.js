@@ -4,6 +4,8 @@ import mysql from "mysql2";
 import path from "path";
 import { fileURLToPath } from "url";
 import rollupRoutes from "./routes/rollupRoutes.js";
+import userRollupRoutes from "./routes/userRollupRoutes.js";
+import riderRollupRoutes from "./routes/riderRollupRoutes.js";  
 
 // --- ESM __dirname fix ---
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +16,7 @@ const app = express();
 const port = 3000;
 
 app.use(express.static(path.join(__dirname, "public")));
+
 
 // --- Local database connection ---
 const db = mysql.createConnection({
@@ -33,6 +36,8 @@ db.connect((err) => {
 
 // --- Mount routes (AFTER db is defined) ---
 app.use("/report/rollups", rollupRoutes(db));
+app.use("/report/rollups", riderRollupRoutes(db));
+app.use("/report/rollups", userRollupRoutes(db));
 
 
 // Homepage
@@ -212,6 +217,61 @@ app.get("/report/fact-orders", (req, res) => {
     });
   });
 });
+
+// Dice Fact Orders (modular filters)
+app.get("/report/dice-fact-orders", (req, res) => {
+  const {
+    userKey,
+    riderKey,
+    productKey,
+    minQuantity,
+    maxQuantity,
+    orderCreatedFrom,
+    orderCreatedTo,
+    orderNumberSearch,
+    notesSearch
+  } = req.query;
+
+  const limit = parseInt(req.query.limit) || 50;
+  const offset = parseInt(req.query.offset) || 0;
+
+  let filters = [];
+  let values = [];
+
+  if (userKey) filters.push("user_key = ?"), values.push(userKey);
+  if (riderKey) filters.push("rider_key = ?"), values.push(riderKey);
+  if (productKey) filters.push("product_key = ?"), values.push(productKey);
+  if (minQuantity) filters.push("quantity >= ?"), values.push(minQuantity);
+  if (maxQuantity) filters.push("quantity <= ?"), values.push(maxQuantity);
+  if (orderCreatedFrom) filters.push("DATE(order_created_at) >= ?"), values.push(orderCreatedFrom);
+  if (orderCreatedTo) filters.push("DATE(order_created_at) <= ?"), values.push(orderCreatedTo);
+  if (orderNumberSearch) filters.push("order_number LIKE ?"), values.push(`%${orderNumberSearch}%`);
+  if (notesSearch) filters.push("notes LIKE ?"), values.push(`%${notesSearch}%`);
+
+  let whereClause = filters.length ? `WHERE ${filters.join(" AND ")}` : "";
+
+  const query = `
+    SELECT *
+    FROM denormFactOrders
+    ${whereClause}
+    ORDER BY order_created_at DESC
+    LIMIT ? OFFSET ?;
+  `;
+
+  values.push(limit, offset);
+
+  db.query(query, values, (err, results) => {
+    if (err) return res.status(500).send("Database error");
+
+    res.json({
+      row_count: results.length,
+      offset,
+      limit,
+      data: results
+    });
+  });
+});
+
 
 
 // Start server
