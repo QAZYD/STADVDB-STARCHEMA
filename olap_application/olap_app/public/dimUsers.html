@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dim Users Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    button { padding: 10px 20px; margin: 5px; }
+    h2 { margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <h1>Dim Users Dashboard</h1>
+
+  <h2>All Users</h2>
+  <table id="dimUsersTable">
+    <thead>
+      <tr>
+        <th>User Key</th>
+        <th>Source User ID</th>
+        <th>Username</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Address 1</th>
+        <th>Address 2</th>
+        <th>City</th>
+        <th>Country</th>
+        <th>Zip Code</th>
+        <th>Phone Number</th>
+        <th>Date of Birth</th>
+        <th>Gender</th>
+        <th>Created At</th>
+        <th>Updated At</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button id="loadMoreUsersBtn">Load More Users</button>
+
+<div class="section">
+  <h2>Users (Individual Rollup)</h2>
+  <button id="loadUserRollupBtn">Load User Rollup</button>
+  <table id="userRollupTable">
+    <thead>
+      <tr>
+        <th>User Key</th>
+        <th>Username</th>
+        <th>Total Quantity</th>
+        <th>Total Orders</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Users by City & Country (Rollup)</h2>
+  <button id="loadCityRollupBtn">Load City-Country Rollup</button>
+  <table id="cityRollupTable">
+    <thead>
+      <tr>
+        <th>City</th>
+        <th>Country</th>
+        <th>Total Quantity</th>
+        <th>Total Orders</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Users by Country (Aggregate Rollup)</h2>
+  <button id="loadCountryRollupBtn">Load Country Rollup</button>
+  <table id="countryRollupTable">
+    <thead>
+      <tr>
+        <th>Country</th>
+        <th>Total Quantity</th>
+        <th>Total Orders</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+  <button onclick="history.back()">Back</button>
+  <script>
+    let userOffset = 0;
+    const userLimit = 100;
+
+    async function loadUsers() {
+      const res = await fetch(`/report/dim-users?offset=${userOffset}&limit=${userLimit}`);
+      const data = await res.json();
+      const tbody = document.querySelector("#dimUsersTable tbody");
+
+      data.data.forEach(user => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${user.user_key}</td>
+          <td>${user.source_user_id}</td>
+          <td>${user.username}</td>
+          <td>${user.first_name}</td>
+          <td>${user.last_name}</td>
+          <td>${user.address_1 || ""}</td>
+          <td>${user.address_2 || ""}</td>
+          <td>${user.city || ""}</td>
+          <td>${user.country || ""}</td>
+          <td>${user.zip_code || ""}</td>
+          <td>${user.phone_number || ""}</td>
+          <td>${user.date_of_birth || ""}</td>
+          <td>${user.gender || ""}</td>
+          <td>${user.created_at}</td>
+          <td>${user.updated_at}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      userOffset += userLimit;
+
+      if (data.row_count < userLimit) {
+        const btn = document.getElementById("loadMoreUsersBtn");
+        btn.disabled = true;
+        btn.innerText = "No More Users";
+      }
+    }
+
+    document.getElementById("loadMoreUsersBtn").addEventListener("click", loadUsers);
+    loadUsers();
+
+    // user rollup not working yet
+    async function loadUserRollup() {
+      const res = await fetch(`/report/rollups/user-rollup`);
+      const json = await res.json();
+      const tbody = document.querySelector("#userRollupTable tbody");
+      tbody.innerHTML = "";
+
+      json.data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.user_key}</td>
+          <td>${row.user_name || "-"}</td>
+          <td>${row.total_quantity}</td>
+          <td>${row.total_orders}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function loadUserLocationRollup() {
+      const res = await fetch(`/report/rollups/user-location-rollup`);
+      const json = await res.json();
+      const tbody = document.querySelector("#cityRollupTable tbody"); 
+      tbody.innerHTML = "";
+
+      json.data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.user_city || "-"}</td>
+          <td>${row.user_country || "-"}</td>
+          <td>${row.total_quantity}</td>
+          <td>${row.total_orders}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById("loadCityRollupBtn").addEventListener("click", loadUserLocationRollup);
+
+    async function loadUserCountryRollup() {
+      const res = await fetch(`/report/rollups/user-country-rollup`);
+      const json = await res.json();
+      const tbody = document.querySelector("#countryRollupTable tbody");
+      tbody.innerHTML = "";
+
+      json.data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.country || "-"}</td>
+          <td>${row.total_quantity}</td>
+          <td>${row.total_orders}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById("loadCountryRollupBtn").addEventListener("click", loadUserCountryRollup);
+  </script>
+</body>
+</html>

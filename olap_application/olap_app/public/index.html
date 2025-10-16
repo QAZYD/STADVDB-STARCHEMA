@@ -14,6 +14,7 @@
   <!-- Navigation buttons -->
   <button onclick="openDimProducts()">View Products & Reports</button>
   <button onclick="openFactOrders()">View Fact Orders</button>
+  <button onclick="openDimUsers()">View Users</button>
 
   <script>
      function openDimProducts() {
@@ -22,6 +23,10 @@
 
      function openFactOrders() {
         window.location.href = "/denormFactOrders.html";
+     }
+
+     function openDimUsers() {
+        window.location.href = "/dimUsers.html";
      }
   </script>
 </body>

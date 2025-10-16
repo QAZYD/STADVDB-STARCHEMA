@@ -177,6 +177,63 @@ app.get("/report/dice-products", (req, res) => {
 });
 //dim_users
 
+app.get("/report/dim-users", (req, res) => {
+  const limit = parseInt(req.query.limit) || 50;
+  const offset = parseInt(req.query.offset) || 0;
+
+  const query = `
+    SELECT
+      user_key,
+      source_user_id,
+      username,
+      first_name,
+      last_name,
+      address_1,
+      address_2,
+      city,
+      country,
+      zip_code,
+      phone_number,
+      date_of_birth,
+      gender,
+      created_at,
+      updated_at
+    FROM dimUsers
+    ORDER BY created_at DESC
+    LIMIT ? OFFSET ?;
+  `;
+
+  db.query(query, [limit, offset], (err, results) => {
+    if (err) return res.status(500).send("Database error");
+
+    res.json({
+      row_count: results.length,
+      offset,
+      limit,
+      data: results
+    });
+  });
+});
+
+app.get("/report/user-country-rollup", (req, res) => {
+  const query = `
+    SELECT 
+      country,
+      COUNT(*) AS total_users
+    FROM dimUsers
+    GROUP BY country
+    ORDER BY total_users DESC;
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) return res.status(500).send("Database error");
+
+    res.json({
+      data: results
+    });
+  });
+});
+
 //dim_riders
 
 
