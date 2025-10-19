@@ -22,7 +22,7 @@ app.use(express.static(path.join(__dirname, "public")));
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "waxdQSCrfv135$!", 
+  password: "K!@n2004", 
   database: "data_warehouse",
 });
 
@@ -42,7 +42,7 @@ app.use("/report/rollups", userRollupRoutes(db));
 
 // Homepage
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(__dirname, "public", "MainQueries.html"));
 });
 
 // Top categories report

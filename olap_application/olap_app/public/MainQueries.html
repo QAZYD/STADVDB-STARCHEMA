@@ -1,61 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Main Queries</title>
-    <link rel="icon" type="image/x-icon" href="static/favicon.ico">
-    <link rel="stylesheet" href="static/styles.css">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        button { padding: 10px 20px; margin: 5px; }
-        h2 { margin-top: 40px; }
-        #diceFilters { margin-bottom: 20px; }
-        #diceFilters label { margin-right: 10px; }
-        #diceFilters input, #diceFilters select { margin-right: 20px; }
-        .section { margin-bottom: 40px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OLAP Operations</title>
+  <link rel="icon" type="image/x-icon" href="static/favicon.ico">
+  <link rel="stylesheet" href="static/styles.css">
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f9fc;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #2d6cdf;
+      color: white;
+      text-align: center;
+      padding: 1.5rem 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    main {
+      padding: 20px 10%;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin: 0;
+    }
+
+    h2 {
+      color: #2d6cdf;
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .section {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      padding: 20px;
+      margin-bottom: 40px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e6eaf2;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .section-header h2 {
+      margin: 0;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .section-controls {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background-color: #2d6cdf;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background-color: #1e50b0;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    select {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    #diceFilters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    #diceFilters label {
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    #diceFilters input,
+    #diceFilters select {
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    /* table container */
+    .table-container {
+      min-height: 350px;
+      max-height: 350px;
+      overflow-y: auto;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      position: relative;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid #eee;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f4ff;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody {
+      min-height: 300px;
+    }
+
+    /* empty state message */
+    .empty-message {
+      text-align: center;
+      color: #999;
+      font-style: italic;
+      border-bottom: none !important;
+      vertical-align: middle;
+      height: 280px;
+      display: table-cell;
+    }
+
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-top: 40px;
+      background-color: #555;
+    }
+
+    .back-btn:hover {
+      background-color: #333;
+    }
+
+    @media (max-width: 768px) {
+      main {
+        padding: 20px;
+      }
+      #diceFilters {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .button-group {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Main Queries</h1>
-    </header>
-    <main>
-        <!-- Slice Products by Category -->
-        <h2>Slice Products by Category</h2>
-        <select id="sliceCategorySelect">
-            <option value="">--Select Category--</option>
-        </select>
-        <button id="loadSliceBtn">Load Slice</button>
+  <header>
+    <h1>OLAP Operations</h1>
+  </header>
 
-        <table id="sliceTable">
+  <main>
+    <!-- Slice Products by Category -->
+    <div class="section">
+        <div class="section-header">
+            <h2>Slice Products by Category</h2>
+            <div class="button-group">
+            <button id="loadSliceBtn">Load Slice</button>
+            </div>
+        </div>
+
+        <div class="section-controls">
+            <select id="sliceCategorySelect">
+            <option value="">  Select Category  </option>
+            </select>
+        </div>
+
+        <div class="table-container">
+            <table id="sliceTable">
             <thead>
                 <tr>
-                    <th>Category</th>
-                    <th>Product Name</th>
-                    <th>Total Quantity</th>
+                <th>Category</th>
+                <th>Product Name</th>
+                <th>Total Quantity</th>
                 </tr>
             </thead>
-            <tbody></tbody>
-        </table>
+            <tbody>
+                <tr><td colspan="3" class="empty-message">Select a category and click "Load Slice" to view data</td></tr>
+            </tbody>
+            </table>
+        </div>
+        </div>
 
-        <!-- Dice Products -->
-        <h2>Dice Products</h2>
-
-        <!-- Dice Filters -->
+    <!-- Dice Products -->
+        <div class="section">
+        <div class="section-header">
+            <h2>Dice Products</h2>
+            <div class="button-group">
+            <button id="loadDiceBtn">Load Dice</button>
+            <button id="loadMoreDiceBtn">Load More</button>
+            </div>
+        </div>
+        
         <div id="diceFilters">
             <label>Category:</label>
-            <select id="diceCategorySelect">
-                <option value="">--All Categories--</option>
-            </select>
+            <select id="diceCategorySelect"><option value="">  All Categories  </option></select>
 
             <label>Price Min:</label>
-            <input type="number" id="dicePriceMin" placeholder="Min Price">
+            <input type="number" id="dicePriceMin" placeholder="Min">
 
             <label>Price Max:</label>
-            <input type="number" id="dicePriceMax" placeholder="Max Price">
+            <input type="number" id="dicePriceMax" placeholder="Max">
 
             <label>Created From:</label>
             <input type="date" id="diceCreatedFrom">
@@ -63,69 +267,87 @@
             <label>Created To:</label>
             <input type="date" id="diceCreatedTo">
 
-            <label>Search Name:</label>
+            <label>Search:</label>
             <input type="text" id="diceNameSearch" placeholder="Product Name">
-
-            <button id="loadDiceBtn">Load Dice</button>
         </div>
 
-        <!-- Dice Table -->
-        <table id="diceTable">
+        <div class="table-container">
+            <table id="diceTable">
             <thead>
                 <tr>
-                    <th>Product Key</th>
-                    <th>Source Product ID</th>
-                    <th>Product Code</th>
-                    <th>Category</th>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th>Created At</th>
-                    <th>Updated At</th>
+                <th>Product Key</th>
+                <th>Source Product ID</th>
+                <th>Product Code</th>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Created At</th>
+                <th>Updated At</th>
                 </tr>
             </thead>
-            <tbody></tbody>
-        </table>
-        <button id="loadMoreDiceBtn">Load More</button>
+            <tbody>
+                <tr><td colspan="8" class="empty-message">Click "Load Dice" to view products</td></tr>
+            </tbody>
+            </table>
+        </div>
+        </div>
 
-        <!-- User Location Rollup Section -->
+    <!-- User Location Rollup -->
         <div class="section">
+        <div class="section-header">
             <h2>User Location Rollup (City & Country)</h2>
+            <div class="button-group">
             <button id="loadUserLocation">Load Location Rollup</button>
             <button id="loadMoreLocation" disabled>Load More</button>
+            </div>
+        </div>
+
+        <div class="table-container">
             <table id="userLocationTable">
-                <thead>
-                    <tr>
-                        <th>City</th>
-                        <th>Country</th>
-                        <th>Total Quantity</th>
-                        <th>Total Orders</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
+            <thead>
+                <tr>
+                <th>City</th>
+                <th>Country</th>
+                <th>Total Quantity</th>
+                <th>Total Orders</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="4" class="empty-message">Click "Load Location Rollup" to view data</td></tr>
+            </tbody>
             </table>
         </div>
+        </div>
 
-        <!-- Vehicle Type Rollup Section -->
+    <!-- Vehicle Type Drilldown -->
         <div class="section">
+        <div class="section-header">
             <h2>Vehicle Type Drilldown</h2>
+            <div class="button-group">
             <button id="loadVehicleDrillDown">Load Vehicle Drilldown</button>
-            <table id="vehicleDrillDownTable">
-                <thead>
-                    <tr>
-                        <th>Vehicle Type</th>
-                        <th>Rider Name</th>
-                        <th>Total Quantity</th>
-                        <th>Total Deliveries</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            </div>
         </div>
 
-        <button onclick="history.back()">Back</button>
-    </main>
+        <div class="table-container">
+            <table id="vehicleDrillDownTable">
+            <thead>
+                <tr>
+                <th>Vehicle Type</th>
+                <th>Rider Name</th>
+                <th>Total Quantity</th>
+                <th>Total Deliveries</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="4" class="empty-message">Click "Load Vehicle Drilldown" to view data</td></tr>
+            </tbody>
+            </table>
+        </div>
+        </div>
 
-    <script>
+  </main>
+
+  <script>
         // Slice script
         async function loadCategories() {
             const res = await fetch("/report/top-categories");
