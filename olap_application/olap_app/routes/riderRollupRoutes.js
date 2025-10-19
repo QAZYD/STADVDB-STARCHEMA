@@ -23,17 +23,23 @@ export default function riderRollupRoutes(db) {
     });
   });
 
-  // --- Vehicle Type Rollup ---
-  router.get("/vehicle-rollup", (req, res) => {
+  // --- Vehicle Type Drilldown ---
+  router.get("/vehicle-drilldown", (req, res) => {
     const query = `
       SELECT 
           r.vehicle_type,
-          SUM(d.quantity) AS total_quantity,
-          COUNT(DISTINCT d.order_key) AS total_deliveries
-      FROM denormFactOrders d
-      JOIN dimRiders r ON d.rider_key = r.rider_key
-      GROUP BY r.vehicle_type
-      ORDER BY total_quantity DESC
+          CONCAT_WS(' ', r.first_name, r.last_name) AS rider_name,
+          SUM(f.total_quantity) AS total_quantity,
+          COUNT(f.order_key) AS total_deliveries
+      FROM (
+          SELECT order_key, rider_key, SUM(quantity) AS total_quantity
+          FROM denormFactOrders
+          GROUP BY order_key, rider_key
+      ) AS f
+      JOIN dimRiders AS r 
+          ON f.rider_key = r.rider_key
+      GROUP BY r.vehicle_type, r.rider_key
+      ORDER BY r.vehicle_type, total_quantity DESC;
     `;
 
     db.query(query, (err, results) => {

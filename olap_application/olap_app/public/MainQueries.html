@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Main Queries</title>
+    <link rel="icon" type="image/x-icon" href="static/favicon.ico">
+    <link rel="stylesheet" href="static/styles.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        button { padding: 10px 20px; margin: 5px; }
+        h2 { margin-top: 40px; }
+        #diceFilters { margin-bottom: 20px; }
+        #diceFilters label { margin-right: 10px; }
+        #diceFilters input, #diceFilters select { margin-right: 20px; }
+        .section { margin-bottom: 40px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Main Queries</h1>
+    </header>
+    <main>
+        <!-- Slice Products by Category -->
+        <h2>Slice Products by Category</h2>
+        <select id="sliceCategorySelect">
+            <option value="">--Select Category--</option>
+        </select>
+        <button id="loadSliceBtn">Load Slice</button>
+
+        <table id="sliceTable">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Product Name</th>
+                    <th>Total Quantity</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <!-- Dice Products -->
+        <h2>Dice Products</h2>
+
+        <!-- Dice Filters -->
+        <div id="diceFilters">
+            <label>Category:</label>
+            <select id="diceCategorySelect">
+                <option value="">--All Categories--</option>
+            </select>
+
+            <label>Price Min:</label>
+            <input type="number" id="dicePriceMin" placeholder="Min Price">
+
+            <label>Price Max:</label>
+            <input type="number" id="dicePriceMax" placeholder="Max Price">
+
+            <label>Created From:</label>
+            <input type="date" id="diceCreatedFrom">
+
+            <label>Created To:</label>
+            <input type="date" id="diceCreatedTo">
+
+            <label>Search Name:</label>
+            <input type="text" id="diceNameSearch" placeholder="Product Name">
+
+            <button id="loadDiceBtn">Load Dice</button>
+        </div>
+
+        <!-- Dice Table -->
+        <table id="diceTable">
+            <thead>
+                <tr>
+                    <th>Product Key</th>
+                    <th>Source Product ID</th>
+                    <th>Product Code</th>
+                    <th>Category</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Created At</th>
+                    <th>Updated At</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button id="loadMoreDiceBtn">Load More</button>
+
+        <!-- User Location Rollup Section -->
+        <div class="section">
+            <h2>User Location Rollup (City & Country)</h2>
+            <button id="loadUserLocation">Load Location Rollup</button>
+            <button id="loadMoreLocation" disabled>Load More</button>
+            <table id="userLocationTable">
+                <thead>
+                    <tr>
+                        <th>City</th>
+                        <th>Country</th>
+                        <th>Total Quantity</th>
+                        <th>Total Orders</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Vehicle Type Rollup Section -->
+        <div class="section">
+            <h2>Vehicle Type Drilldown</h2>
+            <button id="loadVehicleDrillDown">Load Vehicle Drilldown</button>
+            <table id="vehicleDrillDownTable">
+                <thead>
+                    <tr>
+                        <th>Vehicle Type</th>
+                        <th>Rider Name</th>
+                        <th>Total Quantity</th>
+                        <th>Total Deliveries</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <button onclick="history.back()">Back</button>
+    </main>
+
+    <script>
+        // Slice script
+        async function loadCategories() {
+            const res = await fetch("/report/top-categories");
+            const data = await res.json();
+            const select = document.getElementById("sliceCategorySelect");
+            data.forEach(c => {
+                const option = document.createElement("option");
+                option.value = c.product_category;
+                option.innerText = c.product_category;
+                select.appendChild(option);
+            });
+        }
+
+        async function loadSlice() {
+            const category = document.getElementById("sliceCategorySelect").value;
+            if (!category) return alert("Please select a category");
+
+            const res = await fetch(`/report/slice-products?category=${encodeURIComponent(category)}`);
+            const data = await res.json();
+            const tbody = document.querySelector("#sliceTable tbody");
+            tbody.innerHTML = "";
+
+            data.data.forEach(p => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${p.category}</td>
+                    <td>${p.name}</td>
+                    <td>${p.total_quantity}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        document.getElementById("loadSliceBtn").addEventListener("click", loadSlice);
+        loadCategories();
+
+        // Dice script
+        let diceOffset = 0;
+        const diceLimit = 50;
+        let currentDiceFilters = {};
+
+        async function loadDiceCategories() {
+            const res = await fetch("/report/top-categories");
+            const data = await res.json();
+            const select = document.getElementById("diceCategorySelect");
+            data.forEach(c => {
+                const option = document.createElement("option");
+                option.value = c.product_category;
+                option.innerText = c.product_category;
+                select.appendChild(option);
+            });
+        }
+
+        async function loadDice(reset=false) {
+            if (reset) diceOffset = 0;
+
+            const category = document.getElementById("diceCategorySelect").value;
+            const priceMin = document.getElementById("dicePriceMin").value;
+            const priceMax = document.getElementById("dicePriceMax").value;
+            const createdFrom = document.getElementById("diceCreatedFrom").value;
+            const createdTo = document.getElementById("diceCreatedTo").value;
+            const nameSearch = document.getElementById("diceNameSearch").value;
+
+            currentDiceFilters = { category, priceMin, priceMax, createdFrom, createdTo, nameSearch };
+
+            const params = new URLSearchParams({
+                ...currentDiceFilters,
+                limit: diceLimit,
+                offset: diceOffset
+            });
+
+            const res = await fetch(`/report/dice-products?${params.toString()}`);
+            const data = await res.json();
+            const tbody = document.querySelector("#diceTable tbody");
+
+            if (reset) tbody.innerHTML = ""; 
+
+            data.data.forEach(p => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${p.product_key}</td>
+                    <td>${p.source_product_id}</td>
+                    <td>${p.product_code}</td>
+                    <td>${p.category}</td>
+                    <td>${p.name}</td>
+                    <td>${p.price}</td>
+                    <td>${p.created_at}</td>
+                    <td>${p.updated_at}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            diceOffset += diceLimit;
+
+            if (data.row_count < diceLimit) {
+                document.getElementById("loadMoreDiceBtn").disabled = true;
+                document.getElementById("loadMoreDiceBtn").innerText = "No More Rows";
+            } else {
+                document.getElementById("loadMoreDiceBtn").disabled = false;
+                document.getElementById("loadMoreDiceBtn").innerText = "Load More";
+            }
+        }
+
+        document.getElementById("loadDiceBtn").addEventListener("click", () => loadDice(true));
+        document.getElementById("loadMoreDiceBtn").addEventListener("click", () => loadDice(false));
+
+        loadDiceCategories();
+
+        // User Location Rollup script
+        let locationOffset = 0;
+        const limit = 100;
+
+        async function fetchUserLocationRollup() {
+            const res = await fetch(`/report/rollups/user-location-rollup?limit=${limit}&offset=${locationOffset}`);
+            const json = await res.json();
+            const tbody = document.querySelector("#userLocationTable tbody");
+
+            json.data.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${row.user_city || "-"}</td>
+                    <td>${row.user_country || "-"}</td>
+                    <td>${row.total_quantity}</td>
+                    <td>${row.total_orders}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            locationOffset += limit;
+            const loadMoreBtn = document.querySelector("#loadMoreLocation");
+            if (json.row_count < limit) {
+                loadMoreBtn.disabled = true;
+                loadMoreBtn.innerText = "No More Records";
+            } else {
+                loadMoreBtn.disabled = false;
+                loadMoreBtn.innerText = "Load More";
+            }
+        }
+
+        document.querySelector("#loadUserLocation").addEventListener("click", () => {
+            locationOffset = 0;
+            document.querySelector("#userLocationTable tbody").innerHTML = "";
+            fetchUserLocationRollup();
+        });
+
+        document.querySelector("#loadMoreLocation").addEventListener("click", fetchUserLocationRollup);
+
+        // Vehicle Type Drilldown script
+        async function fetchVehicleDrillDown() {
+            const res = await fetch(`/report/rollups/vehicle-drilldown`);
+            const json = await res.json();
+            const tbody = document.querySelector("#vehicleDrillDownTable tbody");
+            tbody.innerHTML = ""; 
+
+            json.data.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${row.vehicle_type}</td>
+                    <td>${row.rider_name}</td>
+                    <td>${row.total_quantity}</td>
+                    <td>${row.total_deliveries}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.querySelector("#loadVehicleDrillDown").addEventListener("click", () => {
+            document.querySelector("#vehicleDrillDownTable tbody").innerHTML = "";
+            fetchVehicleDrillDown();
+        });
+    </script>
+</body>
+</html>
