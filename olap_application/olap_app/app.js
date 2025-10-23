@@ -6,6 +6,8 @@ import { fileURLToPath } from "url";
 import rollupRoutes from "./routes/rollupRoutes.js";
 import userRollupRoutes from "./routes/userRollupRoutes.js";
 import riderRollupRoutes from "./routes/riderRollupRoutes.js";  
+import dotenv from "dotenv";
+dotenv.config();
 
 // --- ESM __dirname fix ---
 const __filename = fileURLToPath(import.meta.url);
@@ -20,10 +22,11 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // --- Local database connection ---
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "K!@n2004", 
-  database: "data_warehouse",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  port: process.env.DB_PORT,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
 });
 
 db.connect((err) => {
