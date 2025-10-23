@@ -322,32 +322,6 @@
         </div>
         </div>
 
-    <!-- User Location Rollup -->
-        <div class="section">
-        <div class="section-header">
-            <h2>User Location Rollup (City & Country)</h2>
-            <div class="button-group">
-            <button id="loadUserLocation">Load Location Rollup</button>
-            <button id="loadMoreLocation" disabled>Load More</button>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table id="userLocationTable">
-            <thead>
-                <tr>
-                <th>City</th>
-                <th>Country</th>
-                <th>Total Quantity</th>
-                <th>Total Orders</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td colspan="4" class="empty-message">Click "Load Location Rollup" to view data</td></tr>
-            </tbody>
-            </table>
-        </div>
-        </div>
 
     <!-- Vehicle Type Drilldown -->
         <div class="section">
@@ -491,46 +465,8 @@
 
         loadDiceCategories();
 
-        // User Location Rollup script
-        let locationOffset = 0;
-        const limit = 100;
 
-        async function fetchUserLocationRollup() {
-            const res = await fetch(`/report/rollups/user-location-rollup?limit=${limit}&offset=${locationOffset}`);
-            const json = await res.json();
-            const tbody = document.querySelector("#userLocationTable tbody");
-
-            json.data.forEach(row => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${row.user_city || "-"}</td>
-                    <td>${row.user_country || "-"}</td>
-                    <td>${row.total_quantity}</td>
-                    <td>${row.total_orders}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            locationOffset += limit;
-            const loadMoreBtn = document.querySelector("#loadMoreLocation");
-            if (json.row_count < limit) {
-                loadMoreBtn.disabled = true;
-                loadMoreBtn.innerText = "No More Records";
-            } else {
-                loadMoreBtn.disabled = false;
-                loadMoreBtn.innerText = "Load More";
-            }
-        }
-
-        document.querySelector("#loadUserLocation").addEventListener("click", () => {
-            locationOffset = 0;
-            document.querySelector("#userLocationTable tbody").innerHTML = "";
-            fetchUserLocationRollup();
-        });
-
-        document.querySelector("#loadMoreLocation").addEventListener("click", fetchUserLocationRollup);
-
-        // Vehicle Type Drilldown script
+        // Vehicle Type Drilldown / Roll Up script
           let vehicleViewMode = 'rollup';
 
           function updateVehicleHeaders() {
