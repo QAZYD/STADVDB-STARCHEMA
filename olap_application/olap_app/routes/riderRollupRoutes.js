@@ -43,5 +43,22 @@ export default function riderRollupRoutes(db) {
     });
   });
 
+  router.get("/vehicle-deliveries", (req, res) => {
+    const query = `
+      SELECT 
+        r.vehicle_type,
+        SUM(d.quantity) AS total_quantity,
+        COUNT(DISTINCT d.order_key) AS total_deliveries
+      FROM denormFactOrders d
+      JOIN dimRiders r ON d.rider_key = r.rider_key
+      GROUP BY r.vehicle_type;
+    `;
+
+    db.query(query, (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ row_count: results.length, data: results });
+    });
+  });
+
   return router;
 }

@@ -202,6 +202,36 @@
         justify-content: flex-start;
       }
     }
+
+    .breadcrumb-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .breadcrumb-btn {
+      background: transparent;
+      color: #666;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    
+    .breadcrumb-btn:hover {
+      background: #f0f4ff;
+    }
+    
+    .breadcrumb-btn.active {
+      background: #2d6cdf;
+      color: white;
+    }
+    
+    .breadcrumb-separator {
+      color: #999;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
@@ -322,9 +352,17 @@
     <!-- Vehicle Type Drilldown -->
         <div class="section">
         <div class="section-header">
-            <h2>Vehicle Type Drilldown</h2>
+            <h2>Vehicle Types</h2>
             <div class="button-group">
-            <button id="loadVehicleDrillDown">Load Vehicle Drilldown</button>
+            <button id="loadVehicleDrillDown">Load Vehicle Data</button>
+            </div>
+        </div>
+
+        <div class="section-controls">
+            <div class="breadcrumb-nav">
+                <button id="vehicleRollupBtn" class="breadcrumb-btn active">Vehicle Summary</button>
+                <span class="breadcrumb-separator">→</span>
+                <button id="vehicleDrilldownBtn" class="breadcrumb-btn">Rider Details</button>
             </div>
         </div>
 
@@ -332,14 +370,11 @@
             <table id="vehicleDrillDownTable">
             <thead>
                 <tr>
-                <th>Vehicle Type</th>
-                <th>Rider Name</th>
-                <th>Total Quantity</th>
-                <th>Total Deliveries</th>
+              
                 </tr>
             </thead>
             <tbody>
-                <tr><td colspan="4" class="empty-message">Click "Load Vehicle Drilldown" to view data</td></tr>
+                <tr><td colspan="4" class="empty-message">Click "Load Vehicle Data" to view data</td></tr>
             </tbody>
             </table>
         </div>
@@ -496,28 +531,121 @@
         document.querySelector("#loadMoreLocation").addEventListener("click", fetchUserLocationRollup);
 
         // Vehicle Type Drilldown script
-        async function fetchVehicleDrillDown() {
-            const res = await fetch(`/report/rollups/vehicle-drilldown`);
-            const json = await res.json();
-            const tbody = document.querySelector("#vehicleDrillDownTable tbody");
-            tbody.innerHTML = ""; 
+          let vehicleViewMode = 'rollup';
 
-            json.data.forEach(row => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${row.vehicle_type}</td>
-                    <td>${row.rider_name}</td>
-                    <td>${row.total_quantity}</td>
-                    <td>${row.total_deliveries}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+          function updateVehicleHeaders() {
+              const thead = document.querySelector("#vehicleDrillDownTable thead tr");
+              thead.innerHTML = '';
+              
+              if (vehicleViewMode === 'rollup') {
+                  thead.innerHTML = `
+                      <th>Vehicle Type</th>
+                      <th>Total Quantity</th>
+                      <th>Total Deliveries</th>
+                  `;
+              } else {
+                  thead.innerHTML = `
+                      <th>Vehicle Type</th>
+                      <th>Rider Name</th>
+                      <th>Total Quantity</th>
+                      <th>Total Deliveries</th>
+                  `;
+              }
+          }
 
-        document.querySelector("#loadVehicleDrillDown").addEventListener("click", () => {
-            document.querySelector("#vehicleDrillDownTable tbody").innerHTML = "";
-            fetchVehicleDrillDown();
-        });
+          function updateBreadcrumbButtons() {
+              document.getElementById('vehicleRollupBtn').classList.toggle('active', vehicleViewMode === 'rollup');
+              document.getElementById('vehicleDrilldownBtn').classList.toggle('active', vehicleViewMode === 'drilldown');
+          }
+
+          async function fetchVehicleData() {
+              const tbody = document.querySelector("#vehicleDrillDownTable tbody");
+              tbody.innerHTML = "<tr><td colspan='4' class='empty-message'>Loading data...</td></tr>";
+              
+              try {
+                  const endpoint = vehicleViewMode === 'rollup' 
+                      ? '/report/rollups/vehicle-deliveries' 
+                      : '/report/rollups/vehicle-drilldown';
+                      
+                  console.log(`Fetching data from: ${endpoint}`);
+                  
+                  const response = await fetch(endpoint);
+                  
+                  if (!response.ok) {
+                      throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                  }
+                  
+                  const json = await response.json();
+                  console.log("Received data:", json);
+                  
+                  if (!json.data || json.data.length === 0) {
+                      tbody.innerHTML = "<tr><td colspan='4' class='empty-message'>No data available</td></tr>";
+                      return;
+                  }
+                  
+                  tbody.innerHTML = "";
+                  
+                  if (vehicleViewMode === 'rollup') {
+                      json.data.forEach(row => {
+                          const tr = document.createElement("tr");
+                          const quantity = typeof row.total_quantity === 'number' ? 
+                              row.total_quantity.toLocaleString() : 
+                              Number(row.total_quantity || 0).toLocaleString();
+                              
+                          const deliveries = typeof row.total_deliveries === 'number' ? 
+                              row.total_deliveries.toLocaleString() : 
+                              Number(row.total_deliveries || 0).toLocaleString();
+                              
+                          tr.innerHTML = `
+                              <td>${row.vehicle_type || 'Unknown'}</td>
+                              <td>${quantity}</td>
+                              <td>${deliveries}</td>
+                          `;
+                          tbody.appendChild(tr);
+                      });
+                  } else {
+                      json.data.forEach(row => {
+                          const tr = document.createElement("tr");
+                          tr.innerHTML = `
+                              <td>${row.vehicle_type || 'Unknown'}</td>
+                              <td>${row.rider_name || '-'}</td>
+                              <td>${Number(row.total_quantity || 0).toLocaleString()}</td>
+                              <td>${Number(row.total_deliveries || 0).toLocaleString()}</td>
+                          `;
+                          tbody.appendChild(tr);
+                      });
+                  }
+              } catch (error) {
+                  console.error("Error fetching vehicle data:", error);
+                  tbody.innerHTML = `<tr><td colspan='4' class='empty-message'>Error loading data: ${error.message}</td></tr>`;
+              }
+          }
+
+          document.addEventListener('DOMContentLoaded', () => {
+              if (document.getElementById('vehicleRollupBtn') && document.getElementById('vehicleDrilldownBtn')) {
+                  updateVehicleHeaders();
+                  updateBreadcrumbButtons();
+              }
+          });
+          
+          document.getElementById('vehicleRollupBtn')?.addEventListener('click', () => {
+              vehicleViewMode = 'rollup';
+              updateVehicleHeaders();
+              updateBreadcrumbButtons();
+              fetchVehicleData();
+          });
+
+          document.getElementById('vehicleDrilldownBtn')?.addEventListener('click', () => {
+              vehicleViewMode = 'drilldown';
+              updateVehicleHeaders();
+              updateBreadcrumbButtons();
+              fetchVehicleData();
+          });
+
+          document.querySelector("#loadVehicleDrillDown")?.addEventListener("click", () => {
+              updateVehicleHeaders();
+              fetchVehicleData();
+          });
     </script>
 </body>
 </html>
